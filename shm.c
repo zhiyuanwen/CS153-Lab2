@@ -38,7 +38,7 @@ int shm_open(int id, char **pointer) {
       //Process directory, round up the size, max page size, V2P macro of the fram kalloc, permissions for bellow
       mappages(curproc->pgdir, (void*) PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
       shm_table.shm_pages[i].refcnt++; //Another wants to point so increase the amount
-      *pointer += (char *) PGROUNDUP(curproc -> sz); //Pointer at it
+      *pointer = (char *) PGROUNDUP(curproc -> sz); //Pointer at it
       curproc -> sz += PGSIZE; //Increase page size by 1 page
       release(&(shm_table.lock)); //Release the lock since we finished the pointer
       return 0; //Continue since reference increased, return here for faster
@@ -52,7 +52,7 @@ int shm_open(int id, char **pointer) {
       memset(shm_table.shm_pages[i].frame, 0, PGSIZE); //Set up memory
       //Process directory, round up the size, max page size, V2P macro of the fram kalloc, permissions for bellow
       mappages(curproc->pgdir, (void*) PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
-      *pointer += (char *) PGROUNDUP(curproc -> sz); //Pointer at it
+      *pointer = (char *) PGROUNDUP(curproc -> sz); //Pointer at it
       curproc -> sz += PGSIZE; //Increase page size by 1 page
       break; //Do bellow since its the same
     }
