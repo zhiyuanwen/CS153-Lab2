@@ -35,8 +35,11 @@ int shm_open(int id, char **pointer) {
   acquire(&(shm_table.lock)); //Acquire the lock done through init
   for(i = 0; i < 64; i++) { //Go through each of the pages (0 - 63) to find id
     if(shm_table.shm_pages[i].id == id) { //If the id matches with what I want, do
+      //Process directory, round up the size, max page size, V2P macro of the fram kalloc, permissions for bellow
+      mappages(curproc->pgdir, (void*) PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
       shm_table.shm_pages[i].refcnt++; //Another wants to point so increase the pointer
-      mappages(curproc->pgdir, PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
+      *pointer += (char *) PGROUNDUP(curproc -> sz); //Pointer at it
+      curproc -> sz += PGSIZE; //Increase page size by 1 page
       release(&(shm_table.lock)); //Release the lock since we finished the pointer
       return 0; //Continue since reference increased, return here for faster
     }
@@ -44,10 +47,14 @@ int shm_open(int id, char **pointer) {
   for(i = 0; i < 64; i++) { //Since id isn't found, find a page that is empty
     if(shm_table.shm_pages[i].id == 0) { //If the id matches with what I want, do
       shm_table.shm_pages[i].id = id; //Set the id to the one I want
-      shm_table.shm_pages[i].frame = kalloc(); //Given in website explanation
+      shm_table.shm_pages[i].frame = kalloc(); //Allocate memory
       shm_table.shm_pages[i].refcnt = 1; //There is now 1 reference to it
-      memset(shm_table.shm_pages[i].frame, 0, PGSIZE);
-      mappages(curproc->pgdir, PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
+      memset(shm_table.shm_pages[i].frame, 0, PGSIZE); //Set up memory
+      //Process directory, round up the size, max page size, V2P macro of the fram kalloc, permissions for bellow
+      mappages(curproc->pgdir, (void*) PGROUNDUP(curproc -> sz), PGSIZE, V2P(shm_table.shm_pages[i].frame), PTE_W|PTE_U);
+      shm_table.shm_pages[i].refcnt++; //Another wants to point so increase the pointer
+      *pointer += (char *) PGROUNDUP(curproc -> sz); //Pointer at it
+      curproc -> sz += PGSIZE; //Increase page size by 1 page
       break; //Do bellow since its the same
     }
   }
