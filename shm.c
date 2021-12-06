@@ -30,8 +30,7 @@ void shminit() {
 
 int shm_open(int id, char **pointer) {
   struct proc *curproc = myproc(); //Get the current process
-  char *u_shm_adr; //Get an address
-  int i; //Declared for later purposes
+  int i; //Declared for double loops so don't declare twice through
   acquire(&(shm_table.lock)); //Acquire the lock done through init
   for(i = 0; i < 64; i++) { //Go through each of the pages (0 - 63) to find id
     if(shm_table.shm_pages[i].id == id) { //If the id matches with what I want, do
