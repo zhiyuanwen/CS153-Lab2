@@ -1,5 +1,4 @@
 #include "types.h"
-#include "shm.c"
 #include "stat.h"
 #include "user.h"
 #include "uspinlock.h"
